@@ -38,9 +38,13 @@
       text-decoration: underline;
     }
     .hero {
-      padding: 60px 20px;
+      padding: 80px 20px;
       text-align: center;
-      background-color: #fff8e1;
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Gyeongbokgung_Geunjeongjeon_2.jpg/1600px-Gyeongbokgung_Geunjeongjeon_2.jpg');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
     }
     .hero h2 {
       font-size: 2.5em;
@@ -55,7 +59,12 @@
       font-size: 1.8em;
       margin-bottom: 10px;
     }
-    .calendar-placeholder, .signup-placeholder {
+    .calendar-embed iframe {
+      border: none;
+      width: 100%;
+      height: 600px;
+    }
+    .signup-placeholder {
       background-color: #fff3cd;
       border: 2px dashed #f0ad4e;
       padding: 30px;
@@ -102,8 +111,9 @@
 
   <section class="section" id="calendar">
     <h3>교육 일정 캘린더</h3>
-    <div class="calendar-placeholder">
-      [여기에 캘린더가 들어갈 예정입니다]
+    <div class="calendar-embed">
+      <!-- 구글 캘린더 퍼가기 코드 자리 (예시 캘린더로 임시 구성) -->
+      <iframe src="https://calendar.google.com/calendar/embed?src=ko.south_korea%23holiday%40group.v.calendar.google.com&ctz=Asia%2FSeoul"></iframe>
     </div>
   </section>
 
