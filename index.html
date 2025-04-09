@@ -59,24 +59,53 @@
       font-size: 1.8em;
       margin-bottom: 10px;
     }
-    .calendar-embed iframe {
-      border: none;
-      width: 100%;
-      height: 600px;
-    }
-    .signup-placeholder {
-      background-color: #fff3cd;
-      border: 2px dashed #f0ad4e;
-      padding: 30px;
+    .calendar-wrapper {
       text-align: center;
+    }
+    .calendar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    .day {
+      width: 120px;
+      padding: 10px;
+      background-color: #fff3cd;
+      border: 1px solid #f0ad4e;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .day.disabled {
+      background-color: #eee;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+    .timeslot {
       margin-top: 20px;
     }
-    footer {
+    .timeslot button {
+      margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
       background-color: #f4b400;
       color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .timeslot button.full {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .payment-box {
+      margin-top: 20px;
+      background-color: #ffe082;
+      padding: 15px;
       text-align: center;
-      padding: 15px 0;
-      margin-top: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -99,23 +128,81 @@
     <p>궁궐, 박물관, 유적지를 직접 체험하며 배우는 살아있는 역사 수업</p>
   </div>
 
-  <section class="section" id="programs">
-    <h3>주요 프로그램</h3>
-    <ul>
-      <li>👑 조선왕조 궁궐 탐방</li>
-      <li>🏺 국립중앙박물관 어린이 투어</li>
-      <li>📜 역사 유적지 지도 따라가기</li>
-      <li>🎨 유물 스케치 & 만들기 체험</li>
-    </ul>
-  </section>
-
   <section class="section" id="calendar">
     <h3>교육 일정 캘린더</h3>
-    <div class="calendar-embed">
-      <!-- 구글 캘린더 퍼가기 코드 자리 (예시 캘린더로 임시 구성) -->
-      <iframe src="https://calendar.google.com/calendar/embed?src=ko.south_korea%23holiday%40group.v.calendar.google.com&ctz=Asia%2FSeoul"></iframe>
+    <div class="calendar-wrapper">
+      <div class="calendar" id="calendar-days"></div>
+      <div class="timeslot" id="timeslots"></div>
+      <div class="payment-box" id="paymentBox" style="display:none;" onclick="alert('결제 페이지로 이동합니다!')">
+        결제창으로 가기
+      </div>
     </div>
   </section>
+
+  <script>
+    const calendarDays = document.getElementById('calendar-days');
+    const timeslots = document.getElementById('timeslots');
+    const paymentBox = document.getElementById('paymentBox');
+
+    const timeOptions = [
+      { label: '1부 10:00~12:00', id: 'time1' },
+      { label: '2부 13:00~15:00', id: 'time2' },
+      { label: '3부 15:00~17:00', id: 'time3' },
+    ];
+
+    const sampleBookingData = {
+      '2025-04-12': { time1: 4, time2: 8, time3: 7 },
+      '2025-04-13': { time1: 8, time2: 8, time3: 8 },
+    };
+
+    function getUpcomingWeekends() {
+      const weekends = [];
+      const today = new Date();
+      for (let i = 0; i < 14; i++) {
+        const date = new Date();
+        date.setDate(today.getDate() + i);
+        const day = date.getDay();
+        if (day === 0 || day === 6) {
+          const dateString = date.toISOString().split('T')[0];
+          weekends.push({ label: dateString, date });
+        }
+      }
+      return weekends;
+    }
+
+    function renderCalendar() {
+      const weekends = getUpcomingWeekends();
+      weekends.forEach(({ label, date }) => {
+        const div = document.createElement('div');
+        div.className = 'day';
+        div.innerText = label;
+        div.onclick = () => showTimeslots(label);
+        calendarDays.appendChild(div);
+      });
+    }
+
+    function showTimeslots(dateStr) {
+      timeslots.innerHTML = '';
+      paymentBox.style.display = 'none';
+      const todayBooking = sampleBookingData[dateStr] || {};
+      timeOptions.forEach(({ label, id }) => {
+        const count = todayBooking[id] || 0;
+        const btn = document.createElement('button');
+        btn.innerText = `${label} (${count}/8)`;
+        if (count >= 8) {
+          btn.className = 'full';
+          btn.disabled = true;
+        } else {
+          btn.onclick = () => {
+            paymentBox.style.display = 'block';
+          };
+        }
+        timeslots.appendChild(btn);
+      });
+    }
+
+    renderCalendar();
+  </script>
 
   <section class="section" id="apply">
     <h3>참가 신청</h3>
