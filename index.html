@@ -59,8 +59,11 @@
       gap: 5px;
     }
     .day-cell {
-      padding: 10px;
-      border-radius: 5px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
       cursor: pointer;
     }
     .day-cell.weekday {
@@ -68,7 +71,7 @@
       color: #aaa;
       cursor: not-allowed;
     }
-    .day-cell.weekend {
+    .day-cell.weekend, .day-cell.holiday {
       background-color: #fff8e1;
     }
     .day-cell.full {
@@ -85,6 +88,23 @@
       font-weight: bold;
       text-align: center;
       margin-bottom: 5px;
+    }
+    .timeslot-container {
+      margin-top: 20px;
+    }
+    .timeslot-container button {
+      margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #f4b400;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .timeslot-container button.full {
+      background-color: #ccc;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -119,19 +139,30 @@
         <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="timeslot-container" id="timeslot-container"></div>
     </div>
   </section>
 
   <script>
     const calendarGrid = document.getElementById('calendar-grid');
     const calendarMonth = document.getElementById('calendar-month');
+    const timeslotContainer = document.getElementById('timeslot-container');
+
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
 
-    const bookingData = {}; // 모든 정원은 0으로 시작
+    const bookingData = {}; // 각 날짜별 정원 상태 저장
+    const holidays = ['2025-01-01', '2025-03-01', '2025-05-05', '2025-06-06', '2025-08-15', '2025-10-03', '2025-10-09', '2025-12-25'];
+
+    const times = [
+      { id: 'time1', label: '1부 10:00~12:00' },
+      { id: 'time2', label: '2부 13:00~15:00' },
+      { id: 'time3', label: '3부 15:00~17:00' }
+    ];
 
     function renderCalendar(year, month) {
       calendarGrid.innerHTML = '';
+      timeslotContainer.innerHTML = '';
       const date = new Date(year, month, 1);
       const monthName = date.toLocaleString('ko-KR', { month: 'long' });
       calendarMonth.innerText = `${year}년 ${monthName}`;
@@ -148,23 +179,43 @@
         const dayDate = new Date(year, month, day);
         const dateStr = dayDate.toISOString().split('T')[0];
         const dayOfWeek = dayDate.getDay();
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        const isHoliday = holidays.includes(dateStr);
 
         const div = document.createElement('div');
         div.className = 'day-cell';
         div.innerText = day;
 
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-          div.classList.add('weekend');
-          const data = bookingData[dateStr] || { time1: 0, time2: 0, time3: 0 };
-          const allFull = data.time1 >= 8 && data.time2 >= 8 && data.time3 >= 8;
+        if (isWeekend || isHoliday) {
+          div.classList.add(isHoliday ? 'holiday' : 'weekend');
+          const booking = bookingData[dateStr] || { time1: 0, time2: 0, time3: 0 };
+          const allFull = times.every(t => booking[t.id] >= 8);
           if (allFull) div.classList.add('full');
-          else div.onclick = () => alert(`${dateStr}\n예약 가능한 날짜입니다.`);
+          else div.onclick = () => showTimeslots(dateStr);
         } else {
           div.classList.add('weekday');
         }
 
         calendarGrid.appendChild(div);
       }
+    }
+
+    function showTimeslots(dateStr) {
+      timeslotContainer.innerHTML = `<h4>${dateStr} 예약 가능 타임</h4>`;
+      const booking = bookingData[dateStr] || { time1: 0, time2: 0, time3: 0 };
+
+      times.forEach(t => {
+        const count = booking[t.id] || 0;
+        const btn = document.createElement('button');
+        btn.innerText = `${t.label} | ${count}/8명`;
+        if (count >= 8) {
+          btn.className = 'full';
+          btn.disabled = true;
+        } else {
+          btn.onclick = () => alert(`결제 페이지로 이동합니다: ${t.label}`);
+        }
+        timeslotContainer.appendChild(btn);
+      });
     }
 
     function changeMonth(offset) {
