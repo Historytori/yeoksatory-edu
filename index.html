@@ -59,12 +59,13 @@
       gap: 5px;
     }
     .day-cell {
-      height: 80px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
       cursor: pointer;
+      font-weight: bold;
     }
     .day-cell.weekday {
       background-color: #eee;
@@ -89,22 +90,27 @@
       text-align: center;
       margin-bottom: 5px;
     }
-    .timeslot-container {
+    .timeslot-container,
+    .site-container,
+    .form-container {
       margin-top: 20px;
+      text-align: center;
     }
-    .timeslot-container button {
+    button {
       margin: 5px;
       padding: 10px 20px;
       border: none;
       border-radius: 5px;
-      background-color: #f4b400;
-      color: white;
       font-weight: bold;
       cursor: pointer;
     }
-    .timeslot-container button.full {
-      background-color: #ccc;
-      cursor: not-allowed;
+    .full {
+      background-color: #ccc !important;
+      cursor: not-allowed !important;
+    }
+    .available {
+      background-color: #f4b400;
+      color: white;
     }
   </style>
 </head>
@@ -139,112 +145,154 @@
         <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
+
       <div class="timeslot-container" id="timeslot-container"></div>
+      <div class="site-container" id="site-container"></div>
+      <div class="form-container" id="form-container"></div>
     </div>
   </section>
+<script>
+  const calendarGrid = document.getElementById('calendar-grid');
+  const calendarMonth = document.getElementById('calendar-month');
+  const timeslotContainer = document.getElementById('timeslot-container');
+  const siteContainer = document.getElementById('site-container');
+  const formContainer = document.getElementById('form-container');
 
-  <script>
-    const calendarGrid = document.getElementById('calendar-grid');
-    const calendarMonth = document.getElementById('calendar-month');
-    const timeslotContainer = document.getElementById('timeslot-container');
+  let currentDate = new Date();
+  let currentMonth = currentDate.getMonth();
+  let currentYear = currentDate.getFullYear();
+  const today = new Date().toISOString().split('T')[0];
 
-    let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
+  const holidays = [
+    "2025-01-01", "2025-03-01", "2025-05-05", "2025-06-06",
+    "2025-08-15", "2025-09-28", "2025-09-29", "2025-09-30",
+    "2025-10-03", "2025-10-09", "2025-12-25"
+  ];
 
-    const bookingData = {}; // 각 날짜별 정원 상태 저장
-    const holidays = ['2025-01-01', '2025-03-01', '2025-05-05', '2025-06-06', '2025-08-15', '2025-10-03', '2025-10-09', '2025-12-25'];
+  const times = [
+    { id: 'time1', label: '1부 10:00~12:00' },
+    { id: 'time2', label: '2부 13:00~15:00' },
+    { id: 'time3', label: '3부 15:00~17:00' }
+  ];
 
-    const times = [
-      { id: 'time1', label: '1부 10:00~12:00' },
-      { id: 'time2', label: '2부 13:00~15:00' },
-      { id: 'time3', label: '3부 15:00~17:00' }
-    ];
+  const sites = ['경복궁', '창덕궁', '창경궁', '덕수궁'];
 
-    function renderCalendar(year, month) {
-      calendarGrid.innerHTML = '';
-      timeslotContainer.innerHTML = '';
-      const date = new Date(year, month, 1);
-      const monthName = date.toLocaleString('ko-KR', { month: 'long' });
-      calendarMonth.innerText = `${year}년 ${monthName}`;
+  const bookingData = {}; // 예: {'2025-04-13': { 'time1-경복궁': 2 }}
 
-      const firstDay = date.getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
+  function renderCalendar(year, month) {
+    calendarGrid.innerHTML = '';
+    timeslotContainer.innerHTML = '';
+    siteContainer.innerHTML = '';
+    formContainer.innerHTML = '';
 
-      for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement('div');
-        calendarGrid.appendChild(empty);
-      }
+    const date = new Date(year, month, 1);
+    const monthName = date.toLocaleString('ko-KR', { month: 'long' });
+    calendarMonth.innerText = `${year}년 ${monthName}`;
 
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dayDate = new Date(year, month, day);
-        const dateStr = dayDate.toISOString().split('T')[0];
-        const dayOfWeek = dayDate.getDay();
-        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-        const isHoliday = holidays.includes(dateStr);
+    const firstDay = date.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        const div = document.createElement('div');
-        div.className = 'day-cell';
-        div.innerText = day;
+    const now = new Date();
+    const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
 
-        if (isWeekend || isHoliday) {
-          div.classList.add(isHoliday ? 'holiday' : 'weekend');
-          const booking = bookingData[dateStr] || { time1: 0, time2: 0, time3: 0 };
-          const allFull = times.every(t => booking[t.id] >= 8);
-          if (allFull) div.classList.add('full');
-          else div.onclick = () => showTimeslots(dateStr);
-        } else {
-          div.classList.add('weekday');
-        }
-
-        calendarGrid.appendChild(div);
-      }
+    if (isPastMonth) {
+      calendarMonth.innerText += ' (지난 달은 선택할 수 없습니다)';
+      return;
     }
 
-    function showTimeslots(dateStr) {
-      timeslotContainer.innerHTML = `<h4>${dateStr} 예약 가능 타임</h4>`;
-      const booking = bookingData[dateStr] || { time1: 0, time2: 0, time3: 0 };
-
-      times.forEach(t => {
-        const count = booking[t.id] || 0;
-        const btn = document.createElement('button');
-        btn.innerText = `${t.label} | ${count}/8명`;
-        if (count >= 8) {
-          btn.className = 'full';
-          btn.disabled = true;
-        } else {
-          btn.onclick = () => alert(`결제 페이지로 이동합니다: ${t.label}`);
-        }
-        timeslotContainer.appendChild(btn);
-      });
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      calendarGrid.appendChild(empty);
     }
 
-    function changeMonth(offset) {
-      currentMonth += offset;
-      if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      } else if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateObj = new Date(year, month, day);
+      const dateStr = dateObj.toISOString().split('T')[0];
+      const dayOfWeek = dateObj.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const isHoliday = holidays.includes(dateStr);
+
+      const div = document.createElement('div');
+      div.className = 'day-cell';
+      div.innerText = day;
+
+      if (isWeekend || isHoliday) {
+        div.classList.add(isHoliday ? 'holiday' : 'weekend');
+        div.onclick = () => showTimeslots(dateStr);
+      } else {
+        div.classList.add('weekday');
       }
-      renderCalendar(currentYear, currentMonth);
-    }
 
+      calendarGrid.appendChild(div);
+    }
+  }
+
+  function showTimeslots(dateStr) {
+    timeslotContainer.innerHTML = `<h4>${dateStr} 예약 가능 시간</h4>`;
+    siteContainer.innerHTML = '';
+    formContainer.innerHTML = '';
+
+    times.forEach(time => {
+      const btn = document.createElement('button');
+      btn.className = 'available';
+      btn.innerText = `${time.label}`;
+      btn.onclick = () => showSites(dateStr, time.id);
+      timeslotContainer.appendChild(btn);
+    });
+  }
+
+  function showSites(dateStr, timeId) {
+    siteContainer.innerHTML = `<h4>장소 선택</h4>`;
+    formContainer.innerHTML = '';
+
+    sites.forEach(site => {
+      const key = `${dateStr}-${timeId}-${site}`;
+      const count = bookingData[key] || 0;
+      const btn = document.createElement('button');
+      btn.innerText = `${site} (${count}/8명)`;
+      btn.className = count >= 8 ? 'full' : 'available';
+      btn.disabled = count >= 8;
+      if (count < 8) {
+        btn.onclick = () => showForm(dateStr, timeId, site);
+      }
+      siteContainer.appendChild(btn);
+    });
+  }
+
+  function showForm(dateStr, timeId, site) {
+    formContainer.innerHTML = `
+      <h4>참가자 정보 입력</h4>
+      <form action="https://docs.google.com/forms/d/e/1FAIpQLSdHgdFq2dRZTya5l_MjFMJ9UHL3_vHlSt-Wn8E0cwWtx3T2aw/formResponse" method="POST" target="_blank">
+        <input type="hidden" name="entry.1000000000" value="${dateStr}">
+        <input type="hidden" name="entry.1000000001" value="${timeId}">
+        <input type="hidden" name="entry.1000000002" value="${site}">
+        <p>자녀 이름<br><input type="text" name="entry.1234567890" required></p>
+        <p>자녀 나이<br><input type="number" name="entry.2233445566" required></p>
+        <p>보호자 연락처<br><input type="tel" name="entry.3344556677" required></p>
+        <p>알레르기 및 특이사항<br><textarea name="entry.4455667788"></textarea></p>
+        <p>기타 전달사항<br><textarea name="entry.5566778899"></textarea></p>
+        <button type="submit" class="available">제출하기</button>
+      </form>
+    `;
+  }
+
+  function changeMonth(offset) {
+    currentMonth += offset;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    } else if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    }
     renderCalendar(currentYear, currentMonth);
-  </script>
+  }
 
-  <section class="section" id="apply">
-    <h3>참가 신청</h3>
-    <p>신청 가능한 날짜를 선택해주세요.</p>
-  </section>
+  renderCalendar(currentYear, currentMonth);
+</script>
 
-  <section class="section" id="contact">
-    <h3>문의하기</h3>
-    <p>이메일: yeoksatory@yourmail.com<br>전화: 010-1234-5678</p>
-  </section>
-
-  <footer>
-    <p>&copy; 2025 역사토리. All rights reserved.</p>
-  </footer>
+<footer class="section">
+  <p>&copy; 2025 역사토리. All rights reserved.</p>
+</footer>
 </body>
 </html>
