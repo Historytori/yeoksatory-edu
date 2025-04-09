@@ -9,7 +9,6 @@
       font-family: 'Arial', sans-serif;
       margin: 0;
       padding: 0;
-      line-height: 1.6;
       background-color: #fefcf8;
       color: #333;
     }
@@ -17,10 +16,6 @@
       background-color: #f9d342;
       padding: 20px;
       text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2em;
     }
     nav {
       background-color: #f4b400;
@@ -34,9 +29,6 @@
       text-decoration: none;
       font-weight: bold;
     }
-    nav a:hover {
-      text-decoration: underline;
-    }
     .hero {
       padding: 80px 20px;
       text-align: center;
@@ -46,66 +38,53 @@
       color: white;
       text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
     }
-    .hero h2 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-    }
     .section {
       padding: 40px 20px;
       max-width: 1000px;
       margin: auto;
     }
-    .section h3 {
-      font-size: 1.8em;
-      margin-bottom: 10px;
-    }
-    .calendar-wrapper {
+    .calendar-container {
       text-align: center;
     }
-    .calendar {
+    .calendar-header {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
     }
-    .day {
-      width: 120px;
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    .day-cell {
       padding: 10px;
-      background-color: #fff3cd;
-      border: 1px solid #f0ad4e;
-      cursor: pointer;
       border-radius: 5px;
+      cursor: pointer;
     }
-    .day.disabled {
+    .day-cell.weekday {
       background-color: #eee;
       color: #aaa;
       cursor: not-allowed;
     }
-    .timeslot {
-      margin-top: 20px;
+    .day-cell.weekend {
+      background-color: #fff8e1;
     }
-    .timeslot button {
-      margin: 5px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      background-color: #f4b400;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .timeslot button.full {
-      background-color: #ccc;
+    .day-cell.full {
+      background-color: #ddd;
+      color: #888;
       cursor: not-allowed;
     }
-    .payment-box {
-      margin-top: 20px;
+    .day-cell:hover:not(.weekday):not(.full) {
       background-color: #ffe082;
-      padding: 15px;
-      text-align: center;
-      border-radius: 10px;
-      cursor: pointer;
+    }
+    .calendar-day-labels {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
       font-weight: bold;
+      text-align: center;
+      margin-bottom: 5px;
     }
   </style>
 </head>
@@ -130,85 +109,82 @@
 
   <section class="section" id="calendar">
     <h3>교육 일정 캘린더</h3>
-    <div class="calendar-wrapper">
-      <div class="calendar" id="calendar-days"></div>
-      <div class="timeslot" id="timeslots"></div>
-      <div class="payment-box" id="paymentBox" style="display:none;" onclick="alert('결제 페이지로 이동합니다!')">
-        결제창으로 가기
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <button onclick="changeMonth(-1)">이전</button>
+        <h4 id="calendar-month"></h4>
+        <button onclick="changeMonth(1)">다음</button>
       </div>
+      <div class="calendar-day-labels">
+        <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
     </div>
   </section>
 
   <script>
-    const calendarDays = document.getElementById('calendar-days');
-    const timeslots = document.getElementById('timeslots');
-    const paymentBox = document.getElementById('paymentBox');
+    const calendarGrid = document.getElementById('calendar-grid');
+    const calendarMonth = document.getElementById('calendar-month');
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
 
-    const timeOptions = [
-      { label: '1부 10:00~12:00', id: 'time1' },
-      { label: '2부 13:00~15:00', id: 'time2' },
-      { label: '3부 15:00~17:00', id: 'time3' },
-    ];
+    const bookingData = {}; // 모든 정원은 0으로 시작
 
-    const sampleBookingData = {
-      '2025-04-12': { time1: 4, time2: 8, time3: 7 },
-      '2025-04-13': { time1: 8, time2: 8, time3: 8 },
-    };
+    function renderCalendar(year, month) {
+      calendarGrid.innerHTML = '';
+      const date = new Date(year, month, 1);
+      const monthName = date.toLocaleString('ko-KR', { month: 'long' });
+      calendarMonth.innerText = `${year}년 ${monthName}`;
 
-    function getUpcomingWeekends() {
-      const weekends = [];
-      const today = new Date();
-      for (let i = 0; i < 14; i++) {
-        const date = new Date();
-        date.setDate(today.getDate() + i);
-        const day = date.getDay();
-        if (day === 0 || day === 6) {
-          const dateString = date.toISOString().split('T')[0];
-          weekends.push({ label: dateString, date });
-        }
+      const firstDay = date.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        calendarGrid.appendChild(empty);
       }
-      return weekends;
-    }
 
-    function renderCalendar() {
-      const weekends = getUpcomingWeekends();
-      weekends.forEach(({ label, date }) => {
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayDate = new Date(year, month, day);
+        const dateStr = dayDate.toISOString().split('T')[0];
+        const dayOfWeek = dayDate.getDay();
+
         const div = document.createElement('div');
-        div.className = 'day';
-        div.innerText = label;
-        div.onclick = () => showTimeslots(label);
-        calendarDays.appendChild(div);
-      });
-    }
+        div.className = 'day-cell';
+        div.innerText = day;
 
-    function showTimeslots(dateStr) {
-      timeslots.innerHTML = '';
-      paymentBox.style.display = 'none';
-      const todayBooking = sampleBookingData[dateStr] || {};
-      timeOptions.forEach(({ label, id }) => {
-        const count = todayBooking[id] || 0;
-        const btn = document.createElement('button');
-        btn.innerText = `${label} (${count}/8)`;
-        if (count >= 8) {
-          btn.className = 'full';
-          btn.disabled = true;
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          div.classList.add('weekend');
+          const data = bookingData[dateStr] || { time1: 0, time2: 0, time3: 0 };
+          const allFull = data.time1 >= 8 && data.time2 >= 8 && data.time3 >= 8;
+          if (allFull) div.classList.add('full');
+          else div.onclick = () => alert(`${dateStr}\n예약 가능한 날짜입니다.`);
         } else {
-          btn.onclick = () => {
-            paymentBox.style.display = 'block';
-          };
+          div.classList.add('weekday');
         }
-        timeslots.appendChild(btn);
-      });
+
+        calendarGrid.appendChild(div);
+      }
     }
 
-    renderCalendar();
+    function changeMonth(offset) {
+      currentMonth += offset;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      } else if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar(currentYear, currentMonth);
+    }
+
+    renderCalendar(currentYear, currentMonth);
   </script>
 
   <section class="section" id="apply">
     <h3>참가 신청</h3>
-    <div class="signup-placeholder">
-      [여기에 신청/결제 시스템이 들어갈 예정입니다]
-    </div>
+    <p>신청 가능한 날짜를 선택해주세요.</p>
   </section>
 
   <section class="section" id="contact">
