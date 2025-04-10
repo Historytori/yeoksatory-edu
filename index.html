@@ -5,8 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>역사토리 - 어린이 역사 체험 교육</title>
   <style>
+    @font-face {
+      font-family: 'Freesentation';
+      src: url('Freesentation-4Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Freesentation';
+      src: url('Freesentation-5Medium.ttf') format('truetype');
+      font-weight: 500;
+    }
+    @font-face {
+      font-family: 'Freesentation';
+      src: url('Freesentation-6SemiBold.ttf') format('truetype');
+      font-weight: 600;
+    }
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Freesentation', sans-serif;
       margin: 0;
       padding: 0;
       background-color: #fefcf8;
@@ -30,9 +45,9 @@
       font-weight: bold;
     }
     .hero {
-      padding: 80px 20px;
+      padding: 60px 20px;
       text-align: center;
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Gyeongbokgung_Geunjeongjeon_2.jpg/1600px-Gyeongbokgung_Geunjeongjeon_2.jpg');
+      background-image: url('일월오봉도.png');
       background-size: cover;
       background-position: center;
       color: white;
@@ -42,9 +57,6 @@
       padding: 40px 20px;
       max-width: 1000px;
       margin: auto;
-    }
-    .calendar-container {
-      text-align: center;
     }
     .calendar-header {
       display: flex;
@@ -56,33 +68,7 @@
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-    }
-    .day-cell {
-      height: 120px;
-      padding: 5px;
-      border-radius: 8px;
-      cursor: pointer;
-      position: relative;
-      font-size: 14px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-    }
-    .day-cell.past {
-      background-color: #eee;
-      color: #aaa;
-      cursor: not-allowed;
-    }
-    .day-cell.weekend, .day-cell.holiday {
-      background-color: #fff8e1;
-    }
-    .day-cell.full {
-      background-color: #ddd;
-      color: #888;
-      cursor: not-allowed;
-    }
-    .day-cell:hover:not(.past):not(.full) {
-      background-color: #ffe082;
+      gap: 8px;
     }
     .calendar-day-labels {
       display: grid;
@@ -91,47 +77,61 @@
       text-align: center;
       margin-bottom: 5px;
     }
+    .day-cell {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 6px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      position: relative;
+      font-size: 14px;
+    }
     .day-number {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      font-size: 0.8em;
+      font-size: 1em;
+      font-weight: 600;
     }
-    .sunday {
-      color: red;
-    }
-    .saturday {
-      color: blue;
-    }
+    .sunday { color: red; }
+    .saturday { color: blue; }
     .holiday-name {
-      font-size: 0.75em;
-      color: #d35400;
-      margin-top: 2px;
+      font-size: 0.7em;
+      color: #b85c00;
     }
     .time-button {
-      margin: 2px;
-      padding: 4px 8px;
-      font-size: 12px;
-      background-color: #f4b400;
-      color: white;
-      border: none;
+      font-size: 0.75em;
+      margin-top: 2px;
+      padding: 2px 4px;
       border-radius: 4px;
+      border: none;
+      background-color: #ffe08a;
       cursor: pointer;
     }
     .time-button:hover {
-      background-color: #e09600;
+      background-color: #fdd835;
+    }
+    .disabled {
+      background-color: #eee;
+      color: #aaa;
+      cursor: not-allowed;
     }
     .site-container, .form-container {
-      margin-top: 20px;
       text-align: center;
+      margin-top: 20px;
     }
-    button.full {
-      background-color: #ccc !important;
-      cursor: not-allowed !important;
-    }
-    button.available {
+    .available-button {
+      margin: 5px;
+      padding: 10px 20px;
       background-color: #f4b400;
       color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .available-button:hover {
+      background-color: #e0a800;
     }
   </style>
 </head>
@@ -142,179 +142,159 @@
   </header>
 
   <nav>
-    <a href="#home">홈</a>
-    <a href="#programs">프로그램 안내</a>
     <a href="#calendar">캘린더</a>
-    <a href="#apply">신청하기</a>
     <a href="#contact">문의</a>
   </nav>
 
-  <div class="hero" id="home">
+  <div class="hero">
     <h2>어린이 역사 탐방, 역사토리와 함께해요!</h2>
     <p>궁궐, 박물관, 유적지를 직접 체험하며 배우는 살아있는 역사 수업</p>
   </div>
 
   <section class="section" id="calendar">
     <h3>교육 일정 캘린더</h3>
-    <div class="calendar-container">
-      <div class="calendar-header">
-        <button id="prevBtn" onclick="changeMonth(-1)">이전</button>
-        <h4 id="calendar-month"></h4>
-        <button onclick="changeMonth(1)">다음</button>
-      </div>
-      <div class="calendar-day-labels">
-        <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
-      </div>
-      <div class="calendar-grid" id="calendar-grid"></div>
-      <div class="site-container" id="site-container"></div>
-      <div class="form-container" id="form-container"></div>
+    <div class="calendar-header">
+      <button id="prevBtn" onclick="changeMonth(-1)">이전</button>
+      <h4 id="calendar-month"></h4>
+      <button onclick="changeMonth(1)">다음</button>
     </div>
+    <div class="calendar-day-labels">
+      <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+    </div>
+    <div class="calendar-grid" id="calendar-grid"></div>
+    <div class="site-container" id="site-container"></div>
+    <div class="form-container" id="form-container"></div>
   </section>
-<script>
-  const calendarGrid = document.getElementById('calendar-grid');
-  const calendarMonth = document.getElementById('calendar-month');
-  const siteContainer = document.getElementById('site-container');
-  const formContainer = document.getElementById('form-container');
-  const prevBtn = document.getElementById('prevBtn');
 
-  let currentDate = new Date();
-  let currentMonth = currentDate.getMonth();
-  let currentYear = currentDate.getFullYear();
+  <footer class="section" id="contact">
+    <p>문의: chanchan4077@gmail.com<br>&copy; 2025 역사토리. All rights reserved.</p>
+  </footer>
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayDate = new Date(todayStr);
+  <script>
+    const calendarGrid = document.getElementById('calendar-grid');
+    const calendarMonth = document.getElementById('calendar-month');
+    const siteContainer = document.getElementById('site-container');
+    const formContainer = document.getElementById('form-container');
+    const prevBtn = document.getElementById('prevBtn');
 
-  const holidays = {
-    "2025-05-05": "어린이날",
-    "2025-05-06": "대체공휴일",
-    "2025-06-03": "대통령선거",
-    "2025-06-06": "현충일",
-    "2025-08-15": "광복절",
-    "2025-10-03": "개천절",
-    "2025-10-06": "추석",
-    "2025-10-07": "추석",
-    "2025-10-08": "대체공휴일",
-    "2025-10-09": "한글날",
-    "2025-12-25": "크리스마스"
-  };
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
 
-  const times = [
-    { id: 'time1', label: '1부' },
-    { id: 'time2', label: '2부' },
-    { id: 'time3', label: '3부' }
-  ];
+    const holidays = {
+      "2025-05-05": "어린이날",
+      "2025-05-06": "대체공휴일",
+      "2025-06-03": "대통령선거",
+      "2025-06-06": "현충일",
+      "2025-08-15": "광복절",
+      "2025-10-03": "개천절",
+      "2025-10-06": "추석",
+      "2025-10-07": "추석",
+      "2025-10-08": "대체공휴일",
+      "2025-10-09": "한글날",
+      "2025-12-25": "크리스마스"
+    };
 
-  function renderCalendar(year, month) {
-    calendarGrid.innerHTML = '';
-    siteContainer.innerHTML = '';
-    formContainer.innerHTML = '';
+    const times = [
+      { id: '1부', label: '1부 10:00~12:00' },
+      { id: '2부', label: '2부 13:00~15:00' },
+      { id: '3부', label: '3부 15:00~17:00' }
+    ];
 
-    const date = new Date(year, month, 1);
-    const monthName = date.toLocaleString('ko-KR', { month: 'long' });
-    calendarMonth.innerText = `${year}년 ${monthName}`;
-
-    const firstDay = date.getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    prevBtn.disabled = (year < todayDate.getFullYear()) || (year === todayDate.getFullYear() && month <= todayDate.getMonth());
-
-    for (let i = 0; i < firstDay; i++) {
-      const empty = document.createElement('div');
-      calendarGrid.appendChild(empty);
+    function formatDateKST(date) {
+      const offset = date.getTimezoneOffset() * 60000;
+      const localISO = new Date(date.getTime() - offset).toISOString().split('T')[0];
+      return localISO;
     }
 
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateObj = new Date(year, month, day);
-      const dateStr = dateObj.toISOString().split('T')[0];
+    function renderCalendar(year, month) {
+      calendarGrid.innerHTML = '';
+      siteContainer.innerHTML = '';
+      formContainer.innerHTML = '';
 
-      const isPast = dateObj < todayDate;
-      const dayOfWeek = dateObj.getDay();
-      const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-      const isHoliday = holidays[dateStr] !== undefined;
+      const date = new Date(year, month, 1);
+      const monthName = date.toLocaleString('ko-KR', { month: 'long' });
+      calendarMonth.innerText = `${year}년 ${monthName}`;
 
-      const div = document.createElement('div');
-      div.className = 'day-cell';
-      if (isPast) div.classList.add('past');
-      else if (isHoliday) div.classList.add('holiday');
-      else if (isWeekend) div.classList.add('weekend');
+      const firstDay = date.getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-      // 날짜 숫자
-      const num = document.createElement('div');
-      num.className = 'day-number';
-      if (dayOfWeek === 0) num.classList.add('sunday');
-      else if (dayOfWeek === 6) num.classList.add('saturday');
-      num.innerText = day;
-      div.appendChild(num);
+      const today = new Date();
+      prevBtn.disabled = (year < today.getFullYear() || (year === today.getFullYear() && month <= today.getMonth()));
 
-      // 공휴일 이름
-      if (isHoliday) {
-        const holi = document.createElement('div');
-        holi.className = 'holiday-name';
-        holi.innerText = holidays[dateStr];
-        div.appendChild(holi);
+      for (let i = 0; i < firstDay; i++) calendarGrid.appendChild(document.createElement('div'));
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const d = new Date(year, month, day);
+        const dStr = formatDateKST(d);
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+
+        const dayOfWeek = d.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const isHoliday = holidays[dStr];
+        const isPast = d < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        const num = document.createElement('div');
+        num.className = 'day-number';
+        num.innerText = day;
+        if (dayOfWeek === 0) num.classList.add('sunday');
+        if (dayOfWeek === 6) num.classList.add('saturday');
+        cell.appendChild(num);
+
+        if (isHoliday) {
+          const name = document.createElement('div');
+          name.className = 'holiday-name';
+          name.innerText = holidays[dStr];
+          cell.appendChild(name);
+        }
+
+        if ((isWeekend || isHoliday) && !isPast) {
+          times.forEach(t => {
+            const btn = document.createElement('button');
+            btn.className = 'time-button';
+            btn.innerText = t.label;
+            btn.onclick = () => {
+              showSites(dStr, t.label);
+              document.getElementById('site-container').scrollIntoView({ behavior: 'smooth' });
+            };
+            cell.appendChild(btn);
+          });
+        } else {
+          cell.classList.add('disabled');
+        }
+
+        calendarGrid.appendChild(cell);
       }
+    }
 
-      // 예약 타임 버튼
-      if (!isPast && (isWeekend || isHoliday)) {
-        times.forEach(t => {
-          const btn = document.createElement('button');
-          btn.className = 'time-button';
-          btn.innerText = `${t.label}`;
-          btn.onclick = () => showSites(dateStr, t.label);
-          div.appendChild(btn);
-        });
+    function showSites(dateStr, timeLabel) {
+      siteContainer.innerHTML = `<h4>${dateStr} ${timeLabel} - 역사 장소 선택</h4>`;
+      formContainer.innerHTML = '';
+      ['경복궁', '창덕궁', '창경궁', '덕수궁'].forEach(site => {
+        const btn = document.createElement('button');
+        btn.className = 'available-button';
+        btn.innerText = site;
+        btn.onclick = () => {
+          window.open("https://docs.google.com/forms/d/e/1FAIpQLSdXXXXXXX/formResponse", '_blank');
+        };
+        siteContainer.appendChild(btn);
+      });
+    }
+
+    function changeMonth(offset) {
+      currentMonth += offset;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      } else if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
       }
-
-      calendarGrid.appendChild(div);
+      renderCalendar(currentYear, currentMonth);
     }
-  }
 
-  function showSites(dateStr, timeLabel) {
-    siteContainer.innerHTML = `<h4>${dateStr} ${timeLabel} - 장소 선택</h4>`;
-    formContainer.innerHTML = '';
-    ['경복궁', '창덕궁', '창경궁', '덕수궁'].forEach(site => {
-      const btn = document.createElement('button');
-      btn.className = 'available';
-      btn.innerText = `${site}`;
-      btn.onclick = () => showForm(dateStr, timeLabel, site);
-      siteContainer.appendChild(btn);
-    });
-  }
-
-  function showForm(dateStr, timeLabel, site) {
-    formContainer.innerHTML = `
-      <h4>참가자 정보 입력</h4>
-      <form action="https://docs.google.com/forms/d/e/1FAIpQLSdHgdFq2dRZTya5l_MjFMJ9UHL3_vHlSt-Wn8E0cwWtx3T2aw/formResponse" method="POST" target="_blank">
-        <input type="hidden" name="entry.1000000000" value="${dateStr}">
-        <input type="hidden" name="entry.1000000001" value="${timeLabel}">
-        <input type="hidden" name="entry.1000000002" value="${site}">
-        <p>자녀 이름<br><input type="text" name="entry.1234567890" required></p>
-        <p>자녀 나이<br><input type="number" name="entry.2233445566" required></p>
-        <p>보호자 연락처<br><input type="tel" name="entry.3344556677" required></p>
-        <p>알레르기 및 특이사항<br><textarea name="entry.4455667788"></textarea></p>
-        <p>기타 전달사항<br><textarea name="entry.5566778899"></textarea></p>
-        <button type="submit" class="available">제출하기</button>
-      </form>
-    `;
-  }
-
-  function changeMonth(offset) {
-    currentMonth += offset;
-    if (currentMonth > 11) {
-      currentMonth = 0;
-      currentYear++;
-    } else if (currentMonth < 0) {
-      currentMonth = 11;
-      currentYear--;
-    }
     renderCalendar(currentYear, currentMonth);
-  }
-
-  renderCalendar(currentYear, currentMonth);
-</script>
-
-<footer class="section">
-  <p>&copy; 2025 역사토리. All rights reserved.</p>
-</footer>
+  </script>
 </body>
 </html>
