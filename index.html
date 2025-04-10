@@ -59,15 +59,16 @@
       gap: 5px;
     }
     .day-cell {
-      height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      height: 120px;
+      padding: 5px;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: bold;
+      position: relative;
+      font-size: 14px;
+      background-color: #fff;
+      border: 1px solid #ccc;
     }
-    .day-cell.weekday {
+    .day-cell.past {
       background-color: #eee;
       color: #aaa;
       cursor: not-allowed;
@@ -80,7 +81,7 @@
       color: #888;
       cursor: not-allowed;
     }
-    .day-cell:hover:not(.weekday):not(.full) {
+    .day-cell:hover:not(.past):not(.full) {
       background-color: #ffe082;
     }
     .calendar-day-labels {
@@ -90,25 +91,45 @@
       text-align: center;
       margin-bottom: 5px;
     }
-    .timeslot-container,
-    .site-container,
-    .form-container {
+    .day-number {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      font-size: 0.8em;
+    }
+    .sunday {
+      color: red;
+    }
+    .saturday {
+      color: blue;
+    }
+    .holiday-name {
+      font-size: 0.75em;
+      color: #d35400;
+      margin-top: 2px;
+    }
+    .time-button {
+      margin: 2px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background-color: #f4b400;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .time-button:hover {
+      background-color: #e09600;
+    }
+    .site-container, .form-container {
       margin-top: 20px;
       text-align: center;
     }
-    button {
-      margin: 5px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .full {
+    button.full {
       background-color: #ccc !important;
       cursor: not-allowed !important;
     }
-    .available {
+    button.available {
       background-color: #f4b400;
       color: white;
     }
@@ -137,7 +158,7 @@
     <h3>교육 일정 캘린더</h3>
     <div class="calendar-container">
       <div class="calendar-header">
-        <button onclick="changeMonth(-1)">이전</button>
+        <button id="prevBtn" onclick="changeMonth(-1)">이전</button>
         <h4 id="calendar-month"></h4>
         <button onclick="changeMonth(1)">다음</button>
       </div>
@@ -145,8 +166,6 @@
         <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
-
-      <div class="timeslot-container" id="timeslot-container"></div>
       <div class="site-container" id="site-container"></div>
       <div class="form-container" id="form-container"></div>
     </div>
@@ -154,34 +173,39 @@
 <script>
   const calendarGrid = document.getElementById('calendar-grid');
   const calendarMonth = document.getElementById('calendar-month');
-  const timeslotContainer = document.getElementById('timeslot-container');
   const siteContainer = document.getElementById('site-container');
   const formContainer = document.getElementById('form-container');
+  const prevBtn = document.getElementById('prevBtn');
 
   let currentDate = new Date();
   let currentMonth = currentDate.getMonth();
   let currentYear = currentDate.getFullYear();
-  const today = new Date().toISOString().split('T')[0];
 
-  const holidays = [
-    "2025-01-01", "2025-03-01", "2025-05-05", "2025-06-06",
-    "2025-08-15", "2025-09-28", "2025-09-29", "2025-09-30",
-    "2025-10-03", "2025-10-09", "2025-12-25"
-  ];
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayDate = new Date(todayStr);
+
+  const holidays = {
+    "2025-05-05": "어린이날",
+    "2025-05-06": "대체공휴일",
+    "2025-06-03": "대통령선거",
+    "2025-06-06": "현충일",
+    "2025-08-15": "광복절",
+    "2025-10-03": "개천절",
+    "2025-10-06": "추석",
+    "2025-10-07": "추석",
+    "2025-10-08": "대체공휴일",
+    "2025-10-09": "한글날",
+    "2025-12-25": "크리스마스"
+  };
 
   const times = [
-    { id: 'time1', label: '1부 10:00~12:00' },
-    { id: 'time2', label: '2부 13:00~15:00' },
-    { id: 'time3', label: '3부 15:00~17:00' }
+    { id: 'time1', label: '1부' },
+    { id: 'time2', label: '2부' },
+    { id: 'time3', label: '3부' }
   ];
-
-  const sites = ['경복궁', '창덕궁', '창경궁', '덕수궁'];
-
-  const bookingData = {}; // 예: {'2025-04-13': { 'time1-경복궁': 2 }}
 
   function renderCalendar(year, month) {
     calendarGrid.innerHTML = '';
-    timeslotContainer.innerHTML = '';
     siteContainer.innerHTML = '';
     formContainer.innerHTML = '';
 
@@ -192,13 +216,7 @@
     const firstDay = date.getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const now = new Date();
-    const isPastMonth = year < now.getFullYear() || (year === now.getFullYear() && month < now.getMonth());
-
-    if (isPastMonth) {
-      calendarMonth.innerText += ' (지난 달은 선택할 수 없습니다)';
-      return;
-    }
+    prevBtn.disabled = (year < todayDate.getFullYear()) || (year === todayDate.getFullYear() && month <= todayDate.getMonth());
 
     for (let i = 0; i < firstDay; i++) {
       const empty = document.createElement('div');
@@ -208,63 +226,67 @@
     for (let day = 1; day <= daysInMonth; day++) {
       const dateObj = new Date(year, month, day);
       const dateStr = dateObj.toISOString().split('T')[0];
+
+      const isPast = dateObj < todayDate;
       const dayOfWeek = dateObj.getDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-      const isHoliday = holidays.includes(dateStr);
+      const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+      const isHoliday = holidays[dateStr] !== undefined;
 
       const div = document.createElement('div');
       div.className = 'day-cell';
-      div.innerText = day;
+      if (isPast) div.classList.add('past');
+      else if (isHoliday) div.classList.add('holiday');
+      else if (isWeekend) div.classList.add('weekend');
 
-      if (isWeekend || isHoliday) {
-        div.classList.add(isHoliday ? 'holiday' : 'weekend');
-        div.onclick = () => showTimeslots(dateStr);
-      } else {
-        div.classList.add('weekday');
+      // 날짜 숫자
+      const num = document.createElement('div');
+      num.className = 'day-number';
+      if (dayOfWeek === 0) num.classList.add('sunday');
+      else if (dayOfWeek === 6) num.classList.add('saturday');
+      num.innerText = day;
+      div.appendChild(num);
+
+      // 공휴일 이름
+      if (isHoliday) {
+        const holi = document.createElement('div');
+        holi.className = 'holiday-name';
+        holi.innerText = holidays[dateStr];
+        div.appendChild(holi);
+      }
+
+      // 예약 타임 버튼
+      if (!isPast && (isWeekend || isHoliday)) {
+        times.forEach(t => {
+          const btn = document.createElement('button');
+          btn.className = 'time-button';
+          btn.innerText = `${t.label}`;
+          btn.onclick = () => showSites(dateStr, t.label);
+          div.appendChild(btn);
+        });
       }
 
       calendarGrid.appendChild(div);
     }
   }
 
-  function showTimeslots(dateStr) {
-    timeslotContainer.innerHTML = `<h4>${dateStr} 예약 가능 시간</h4>`;
-    siteContainer.innerHTML = '';
+  function showSites(dateStr, timeLabel) {
+    siteContainer.innerHTML = `<h4>${dateStr} ${timeLabel} - 장소 선택</h4>`;
     formContainer.innerHTML = '';
-
-    times.forEach(time => {
+    ['경복궁', '창덕궁', '창경궁', '덕수궁'].forEach(site => {
       const btn = document.createElement('button');
       btn.className = 'available';
-      btn.innerText = `${time.label}`;
-      btn.onclick = () => showSites(dateStr, time.id);
-      timeslotContainer.appendChild(btn);
-    });
-  }
-
-  function showSites(dateStr, timeId) {
-    siteContainer.innerHTML = `<h4>장소 선택</h4>`;
-    formContainer.innerHTML = '';
-
-    sites.forEach(site => {
-      const key = `${dateStr}-${timeId}-${site}`;
-      const count = bookingData[key] || 0;
-      const btn = document.createElement('button');
-      btn.innerText = `${site} (${count}/8명)`;
-      btn.className = count >= 8 ? 'full' : 'available';
-      btn.disabled = count >= 8;
-      if (count < 8) {
-        btn.onclick = () => showForm(dateStr, timeId, site);
-      }
+      btn.innerText = `${site}`;
+      btn.onclick = () => showForm(dateStr, timeLabel, site);
       siteContainer.appendChild(btn);
     });
   }
 
-  function showForm(dateStr, timeId, site) {
+  function showForm(dateStr, timeLabel, site) {
     formContainer.innerHTML = `
       <h4>참가자 정보 입력</h4>
       <form action="https://docs.google.com/forms/d/e/1FAIpQLSdHgdFq2dRZTya5l_MjFMJ9UHL3_vHlSt-Wn8E0cwWtx3T2aw/formResponse" method="POST" target="_blank">
         <input type="hidden" name="entry.1000000000" value="${dateStr}">
-        <input type="hidden" name="entry.1000000001" value="${timeId}">
+        <input type="hidden" name="entry.1000000001" value="${timeLabel}">
         <input type="hidden" name="entry.1000000002" value="${site}">
         <p>자녀 이름<br><input type="text" name="entry.1234567890" required></p>
         <p>자녀 나이<br><input type="number" name="entry.2233445566" required></p>
