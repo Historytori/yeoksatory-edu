@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>역사토리 - 어린이 역사 체험 교육</title>
   <style>
@@ -9,16 +9,6 @@
       font-family: 'Freesentation';
       src: url('Freesentation-4Regular.ttf') format('truetype');
       font-weight: 400;
-    }
-    @font-face {
-      font-family: 'Freesentation';
-      src: url('Freesentation-5Medium.ttf') format('truetype');
-      font-weight: 500;
-    }
-    @font-face {
-      font-family: 'Freesentation';
-      src: url('Freesentation-6SemiBold.ttf') format('truetype');
-      font-weight: 600;
     }
     body {
       font-family: 'Freesentation', sans-serif;
@@ -28,9 +18,14 @@
       color: #333;
     }
     header {
-      background-color: #f9d342;
-      padding: 20px;
       text-align: center;
+      background-color: #fff;
+    }
+    header img {
+      width: 100%;
+      max-width: 1200px;
+      display: block;
+      margin: auto;
     }
     nav {
       background-color: #f4b400;
@@ -43,16 +38,6 @@
       margin: 0 15px;
       text-decoration: none;
       font-weight: bold;
-    }
-    .hero {
-      text-align: center;
-      background-color: #fff;
-    }
-    .hero img {
-      width: 100%;
-      max-width: 1200px;
-      display: block;
-      margin: auto;
     }
     .section {
       padding: 40px 20px;
@@ -83,13 +68,11 @@
       border: 1px solid #ddd;
       border-radius: 10px;
       padding: 6px;
-      height: 180px;
+      height: 190px;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      position: relative;
+      justify-content: space-between;
       font-size: 14px;
-      justify-content: flex-start;
     }
     .day-number {
       font-size: 1.2em;
@@ -103,13 +86,12 @@
     }
     .time-button {
       font-size: 0.75em;
-      padding: 5px 6px;
-      border-radius: 4px;
+      padding: 6px 4px;
+      border-radius: 6px;
       border: none;
       color: white;
-      margin-top: 5px;
+      margin-top: 4px;
       width: 100%;
-      text-align: center;
     }
     .time-button:nth-of-type(1) {
       background: linear-gradient(to right, #ffd54f, #ffb300);
@@ -128,39 +110,17 @@
       color: #aaa;
       cursor: not-allowed;
     }
-    .site-container, .form-container {
-      text-align: center;
-      margin-top: 20px;
-    }
-    .available-button {
-      margin: 5px;
-      padding: 10px 20px;
-      background-color: #f4b400;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .available-button:hover {
-      background-color: #e0a800;
-    }
   </style>
 </head>
 <body>
   <header>
-    <h1>역사토리</h1>
-    <p>6~13세 아이들을 위한 현장 중심 역사 교육</p>
+    <img src="images/홈페이지%20맨%20위%20배너.jpg" alt="역사토리 수업 신청 배너">
   </header>
 
   <nav>
     <a href="#calendar">캘린더</a>
     <a href="#contact">문의</a>
   </nav>
-
-  <div class="hero">
-    <img src="images/홈페이지%20맨%20위%20배너.jpg" alt="역사토리 수업 신청 배너" />
-  </div>
 
   <section class="section" id="calendar">
     <h3>교육 일정 캘린더</h3>
@@ -173,8 +133,6 @@
       <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
     </div>
     <div class="calendar-grid" id="calendar-grid"></div>
-    <div class="site-container" id="site-container"></div>
-    <div class="form-container" id="form-container"></div>
   </section>
 
   <footer class="section" id="contact">
@@ -184,13 +142,11 @@
   <script>
     const calendarGrid = document.getElementById('calendar-grid');
     const calendarMonth = document.getElementById('calendar-month');
-    const siteContainer = document.getElementById('site-container');
-    const formContainer = document.getElementById('form-container');
     const prevBtn = document.getElementById('prevBtn');
 
-    let currentDate = new Date();
-    let currentMonth = currentDate.getMonth();
-    let currentYear = currentDate.getFullYear();
+    const today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
 
     const holidays = {
       "2025-05-05": "어린이날",
@@ -207,9 +163,9 @@
     };
 
     const times = [
-      { id: '1부', label: '1부 10:00~12:00' },
-      { id: '2부', label: '2부 13:00~15:00' },
-      { id: '3부', label: '3부 15:00~17:00' }
+      '1부 10:00~12:00',
+      '2부 13:00~15:00',
+      '3부 15:00~17:00'
     ];
 
     function formatDateKST(date) {
@@ -220,9 +176,6 @@
 
     function renderCalendar(year, month) {
       calendarGrid.innerHTML = '';
-      siteContainer.innerHTML = '';
-      formContainer.innerHTML = '';
-
       const date = new Date(year, month, 1);
       const monthName = date.toLocaleString('ko-KR', { month: 'long' });
       calendarMonth.innerText = `${year}년 ${monthName}`;
@@ -230,10 +183,11 @@
       const firstDay = date.getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-      const today = new Date();
       prevBtn.disabled = (year < today.getFullYear() || (year === today.getFullYear() && month <= today.getMonth()));
 
-      for (let i = 0; i < firstDay; i++) calendarGrid.appendChild(document.createElement('div'));
+      for (let i = 0; i < firstDay; i++) {
+        calendarGrid.appendChild(document.createElement('div'));
+      }
 
       for (let day = 1; day <= daysInMonth; day++) {
         const d = new Date(year, month, day);
@@ -242,7 +196,7 @@
         cell.className = 'day-cell';
 
         const dayOfWeek = d.getDay();
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
         const isHoliday = holidays[dStr];
         const isPast = d < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -254,21 +208,18 @@
         cell.appendChild(num);
 
         if (isHoliday) {
-          const name = document.createElement('div');
-          name.className = 'holiday-name';
-          name.innerText = holidays[dStr];
-          cell.appendChild(name);
+          const holi = document.createElement('div');
+          holi.className = 'holiday-name';
+          holi.innerText = holidays[dStr];
+          cell.appendChild(holi);
         }
 
-        if ((isWeekend || isHoliday) && !isPast) {
-          times.forEach(t => {
+        if (!isPast && (isWeekend || isHoliday)) {
+          times.forEach((label, i) => {
             const btn = document.createElement('button');
             btn.className = 'time-button';
-            btn.innerText = t.label;
-            btn.onclick = () => {
-              showSites(dStr, t.label);
-              document.getElementById('site-container').scrollIntoView({ behavior: 'smooth' });
-            };
+            btn.innerText = label;
+            btn.onclick = () => alert(`${dStr} ${label} 클릭됨`);
             cell.appendChild(btn);
           });
         } else {
@@ -277,20 +228,6 @@
 
         calendarGrid.appendChild(cell);
       }
-    }
-
-    function showSites(dateStr, timeLabel) {
-      siteContainer.innerHTML = `<h4>${dateStr} ${timeLabel} - 역사 장소 선택</h4>`;
-      formContainer.innerHTML = '';
-      ['경복궁', '창덕궁', '창경궁', '덕수궁'].forEach(site => {
-        const btn = document.createElement('button');
-        btn.className = 'available-button';
-        btn.innerText = site;
-        btn.onclick = () => {
-          window.open("https://docs.google.com/forms/d/e/1FAIpQLSdXXXXXXX/formResponse", '_blank');
-        };
-        siteContainer.appendChild(btn);
-      });
     }
 
     function changeMonth(offset) {
