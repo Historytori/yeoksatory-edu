@@ -79,6 +79,20 @@
       background-color: #eee;
       pointer-events: none;
     }
+    .site-buttons {
+      text-align: center;
+      margin: 30px auto;
+    }
+    .site-button {
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -96,13 +110,20 @@
     <div class="calendar-grid" id="calendar-grid"></div>
   </section>
 
+  <div class="site-buttons" id="site-buttons" style="display:none">
+    <h4>역사 여행을 떠날 교육 장소를 선택하세요</h4>
+    <button class="site-button" onclick="goToForm('경복궁')">경복궁</button>
+    <button class="site-button" onclick="goToForm('창덕궁')">창덕궁</button>
+  </div>
+
   <script>
     const calendarGrid = document.getElementById('calendar-grid');
     const calendarMonth = document.getElementById('calendar-month');
+    const siteButtons = document.getElementById('site-buttons');
     const prevBtn = document.getElementById('prevBtn');
 
     const now = new Date();
-    const todayKST = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // KST 기준
+    const todayKST = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // 한국 시간 기준
     let currentMonth = todayKST.getMonth();
     let currentYear = todayKST.getFullYear();
 
@@ -176,7 +197,10 @@
             const btn = document.createElement('button');
             btn.className = `time-button ${t.class}`;
             btn.innerText = t.label;
-            btn.onclick = () => alert(`${dStr} ${t.label} 클릭됨`);
+            btn.onclick = () => {
+              siteButtons.style.display = 'block';
+              siteButtons.scrollIntoView({ behavior: 'smooth' });
+            };
             cell.appendChild(btn);
           });
         } else {
@@ -198,6 +222,10 @@
       currentMonth = newMonth;
       currentYear = newYear;
       renderCalendar(currentYear, currentMonth);
+    }
+
+    function goToForm(site) {
+      window.open('https://docs.google.com/forms/d/e/1FAIpQLSdKmIznLLif-0R9vo2tr7BuYvBlcWQpAgFiSFlldemSaGoUOQ/viewform', '_blank');
     }
 
     renderCalendar(currentYear, currentMonth);
