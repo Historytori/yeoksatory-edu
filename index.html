@@ -22,7 +22,6 @@
     }
     h3, h4 {
       text-align: center;
-      font-family: 'Freesentation', sans-serif;
     }
     .calendar-section {
       max-width: 1000px;
@@ -34,6 +33,7 @@
       justify-content: center;
       align-items: center;
       margin-bottom: 20px;
+      gap: 40px;
     }
     .calendar-grid {
       display: grid;
@@ -44,24 +44,28 @@
       border: 1px solid #ccc;
       border-radius: 8px;
       padding: 4px;
-      height: 120px;
       aspect-ratio: 1 / 1;
-      position: relative;
       font-size: 12px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+      justify-content: flex-start;
     }
     .day-number {
       font-weight: bold;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
+    }
+    .holiday-label {
+      font-size: 10px;
+      color: #c00;
+      margin-bottom: 2px;
     }
     .sunday { color: red; }
     .saturday { color: blue; }
     .time-button {
       width: 100%;
-      margin-top: 3px;
-      padding: 2px;
+      margin-bottom: 2px;
+      padding: 2px 0;
       border: none;
       color: white;
       border-radius: 4px;
@@ -71,52 +75,9 @@
     .time1 { background: #ffe0b2; }
     .time2 { background: #ffb74d; }
     .time3 { background: #fb8c00; }
-    .site-buttons, .form-container {
-      max-width: 600px;
-      margin: 20px auto;
-      text-align: center;
-    }
-    .site-button {
-      padding: 10px 20px;
-      margin: 10px;
-      background-color: #ff9800;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    form {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      font-family: 'Freesentation', sans-serif;
-      text-align: left;
-    }
-    label {
-      display: block;
-      margin: 18px 0 6px;
-      font-weight: bold;
-      color: #333;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 14px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-family: 'Freesentation', sans-serif;
-    }
-    button[type="submit"] {
-      background-color: #ff9800;
-      color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
+    .disabled {
+      background-color: #eee;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -128,84 +89,36 @@
   <section class="calendar-section">
     <h3>교육 일정 캘린더</h3>
     <div class="calendar-header">
-      <button onclick="changeMonth(-1)">이전</button>
+      <button id="prevBtn" onclick="changeMonth(-1)">이전</button>
       <h4 id="calendar-month"></h4>
       <button onclick="changeMonth(1)">다음</button>
     </div>
     <div class="calendar-grid" id="calendar-grid"></div>
   </section>
 
-  <div class="site-buttons" id="site-buttons" style="display:none">
-    <h4>역사 여행을 떠날 교육 장소를 선택하세요</h4>
-    <button class="site-button" onclick="goToForm('경복궁')">경복궁</button>
-    <button class="site-button" onclick="goToForm('창덕궁')">창덕궁</button>
-  </div>
-
-  <div class="form-container" id="form-container" style="display:none">
-    <form>
-      <label>1) 개인/단체 선택</label>
-      <select required>
-        <option value="">선택하세요</option>
-        <option>개인</option>
-        <option>단체</option>
-      </select>
-
-      <label>2) 아동이름</label>
-      <input type="text" required>
-
-      <label>3) 단체 신청 시 아동 전체 정보</label>
-      <textarea placeholder="예: 홍길동 / 7세 / 남 / 친구 / 01012345678"></textarea>
-
-      <label>4) 아동 나이</label>
-      <select required>
-        <option value="">선택하세요</option>
-        <option>6세</option><option>7세</option><option>8세</option><option>9세</option>
-        <option>10세</option><option>11세</option><option>12세</option><option>13세</option>
-      </select>
-
-      <label>5) 성별</label>
-      <select required>
-        <option value="">선택하세요</option>
-        <option>남자</option>
-        <option>여자</option>
-      </select>
-
-      <label>6) 보호자 연락처</label>
-      <input type="text" required>
-
-      <label>7) 사진/영상 촬영 및 활용 동의</label>
-      <select required>
-        <option value="">선택하세요</option>
-        <option>동의</option>
-        <option>미동의</option>
-      </select>
-
-      <label>8) 사진/영상 홍보 동의</label>
-      <select required>
-        <option value="">선택하세요</option>
-        <option>동의</option>
-        <option>미동의</option>
-      </select>
-
-      <label>9) 결제 및 환불 안내 확인</label>
-      <select required>
-        <option value="">선택하세요</option>
-        <option>수업 결제 및 환불 정책에 동의합니다.</option>
-      </select>
-
-      <button type="submit">제출</button>
-    </form>
-  </div>
-
   <script>
     const calendarGrid = document.getElementById('calendar-grid');
     const calendarMonth = document.getElementById('calendar-month');
-    const siteButtons = document.getElementById('site-buttons');
-    const formContainer = document.getElementById('form-container');
+    const prevBtn = document.getElementById('prevBtn');
 
     const now = new Date();
-    let currentMonth = now.getMonth();
-    let currentYear = now.getFullYear();
+    const todayKST = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // KST 기준
+    let currentMonth = todayKST.getMonth();
+    let currentYear = todayKST.getFullYear();
+
+    const holidays = {
+      "2025-05-05": "어린이날",
+      "2025-05-06": "대체공휴일",
+      "2025-06-03": "대통령선거",
+      "2025-06-06": "현충일",
+      "2025-08-15": "광복절",
+      "2025-10-03": "개천절",
+      "2025-10-06": "추석",
+      "2025-10-07": "추석",
+      "2025-10-08": "대체공휴일",
+      "2025-10-09": "한글날",
+      "2025-12-25": "크리스마스"
+    };
 
     const times = [
       { label: '1부 10:00~12:00', class: 'time1' },
@@ -213,45 +126,61 @@
       { label: '3부 15:00~17:00', class: 'time3' }
     ];
 
+    function formatDateKST(date) {
+      const y = date.getFullYear();
+      const m = ('0' + (date.getMonth() + 1)).slice(-2);
+      const d = ('0' + date.getDate()).slice(-2);
+      return `${y}-${m}-${d}`;
+    }
+
     function renderCalendar(year, month) {
       calendarGrid.innerHTML = '';
-      const date = new Date(year, month, 1);
-      const firstDay = date.getDay();
+      const firstDay = new Date(year, month, 1).getDay();
       const lastDate = new Date(year, month + 1, 0).getDate();
       calendarMonth.innerText = `${year}년 ${month + 1}월`;
+
+      const isBeforeCurrentMonth = year < todayKST.getFullYear() || (year === todayKST.getFullYear() && month < todayKST.getMonth());
+      prevBtn.disabled = isBeforeCurrentMonth;
 
       for (let i = 0; i < firstDay; i++) {
         calendarGrid.appendChild(document.createElement('div'));
       }
 
       for (let day = 1; day <= lastDate; day++) {
-        const d = new Date(year, month, day);
         const cell = document.createElement('div');
         cell.className = 'day-cell';
+        const date = new Date(year, month, day);
+        const kstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+        const dStr = formatDateKST(kstDate);
 
-        const dayOfWeek = d.getDay();
+        const dayOfWeek = date.getDay();
         const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-        const isPast = d < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const isPast = kstDate < new Date(todayKST.getFullYear(), todayKST.getMonth(), todayKST.getDate());
 
-        const dayNumber = document.createElement('div');
-        dayNumber.className = 'day-number';
-        dayNumber.innerText = day;
-        if (dayOfWeek === 0) dayNumber.classList.add('sunday');
-        if (dayOfWeek === 6) dayNumber.classList.add('saturday');
-        cell.appendChild(dayNumber);
+        const number = document.createElement('div');
+        number.className = 'day-number';
+        number.innerText = day;
+        if (dayOfWeek === 0) number.classList.add('sunday');
+        if (dayOfWeek === 6) number.classList.add('saturday');
+        cell.appendChild(number);
 
-        if (isWeekend && !isPast) {
+        if (holidays[dStr]) {
+          const holi = document.createElement('div');
+          holi.className = 'holiday-label';
+          holi.innerText = holidays[dStr];
+          cell.appendChild(holi);
+        }
+
+        if ((isWeekend || holidays[dStr]) && !isPast) {
           times.forEach(t => {
             const btn = document.createElement('button');
             btn.className = `time-button ${t.class}`;
             btn.innerText = t.label;
-            btn.onclick = () => {
-              siteButtons.style.display = 'block';
-              formContainer.style.display = 'none';
-              siteButtons.scrollIntoView({ behavior: 'smooth' });
-            }
+            btn.onclick = () => alert(`${dStr} ${t.label} 클릭됨`);
             cell.appendChild(btn);
           });
+        } else {
+          cell.classList.add('disabled');
         }
 
         calendarGrid.appendChild(cell);
@@ -259,21 +188,16 @@
     }
 
     function changeMonth(offset) {
-      currentMonth += offset;
-      if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      } else if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      }
-      renderCalendar(currentYear, currentMonth);
-    }
+      const tempMonth = currentMonth + offset;
+      const tempYear = currentYear + Math.floor(tempMonth / 12);
+      const newMonth = (tempMonth + 12) % 12;
+      const newYear = tempYear;
 
-    function goToForm(site) {
-      siteButtons.style.display = 'none';
-      formContainer.style.display = 'block';
-      formContainer.scrollIntoView({ behavior: 'smooth' });
+      if (newYear < todayKST.getFullYear() || (newYear === todayKST.getFullYear() && newMonth < todayKST.getMonth())) return;
+
+      currentMonth = newMonth;
+      currentYear = newYear;
+      renderCalendar(currentYear, currentMonth);
     }
 
     renderCalendar(currentYear, currentMonth);
