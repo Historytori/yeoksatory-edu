@@ -20,8 +20,9 @@
       display: block;
       margin: 0 auto;
     }
-    h3 {
+    h3, h4 {
       text-align: center;
+      font-family: 'Freesentation', sans-serif;
     }
     .calendar-section {
       max-width: 1000px;
@@ -43,23 +44,23 @@
       border: 1px solid #ccc;
       border-radius: 8px;
       padding: 4px;
-      height: 110px;
+      height: 120px;
       aspect-ratio: 1 / 1;
       position: relative;
       font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
     .day-number {
-      position: absolute;
-      top: 4px;
-      left: 6px;
       font-weight: bold;
+      margin-bottom: 4px;
     }
     .sunday { color: red; }
     .saturday { color: blue; }
     .time-button {
-      display: block;
       width: 100%;
-      margin-top: 4px;
+      margin-top: 3px;
       padding: 2px;
       border: none;
       color: white;
@@ -87,21 +88,35 @@
     }
     form {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      font-family: 'Freesentation', sans-serif;
       text-align: left;
     }
     label {
       display: block;
-      margin: 12px 0 6px;
+      margin: 18px 0 6px;
       font-weight: bold;
+      color: #333;
     }
     input, select, textarea {
       width: 100%;
-      padding: 6px;
-      margin-bottom: 10px;
+      padding: 10px;
+      margin-bottom: 14px;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-family: 'Freesentation', sans-serif;
+    }
+    button[type="submit"] {
+      background-color: #ff9800;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -121,7 +136,7 @@
   </section>
 
   <div class="site-buttons" id="site-buttons" style="display:none">
-    <h4>역사 장소를 선택하세요</h4>
+    <h4>역사 여행을 떠날 교육 장소를 선택하세요</h4>
     <button class="site-button" onclick="goToForm('경복궁')">경복궁</button>
     <button class="site-button" onclick="goToForm('창덕궁')">창덕궁</button>
   </div>
@@ -129,27 +144,55 @@
   <div class="form-container" id="form-container" style="display:none">
     <form>
       <label>1) 개인/단체 선택</label>
-      <select required><option>개인</option><option>단체</option></select>
+      <select required>
+        <option value="">선택하세요</option>
+        <option>개인</option>
+        <option>단체</option>
+      </select>
+
       <label>2) 아동이름</label>
       <input type="text" required>
+
       <label>3) 단체 신청 시 아동 전체 정보</label>
       <textarea placeholder="예: 홍길동 / 7세 / 남 / 친구 / 01012345678"></textarea>
+
       <label>4) 아동 나이</label>
       <select required>
+        <option value="">선택하세요</option>
         <option>6세</option><option>7세</option><option>8세</option><option>9세</option>
         <option>10세</option><option>11세</option><option>12세</option><option>13세</option>
       </select>
+
       <label>5) 성별</label>
-      <select required><option>남자</option><option>여자</option></select>
+      <select required>
+        <option value="">선택하세요</option>
+        <option>남자</option>
+        <option>여자</option>
+      </select>
+
       <label>6) 보호자 연락처</label>
       <input type="text" required>
+
       <label>7) 사진/영상 촬영 및 활용 동의</label>
-      <select required><option>동의</option><option>미동의</option></select>
+      <select required>
+        <option value="">선택하세요</option>
+        <option>동의</option>
+        <option>미동의</option>
+      </select>
+
       <label>8) 사진/영상 홍보 동의</label>
-      <select required><option>동의</option><option>미동의</option></select>
+      <select required>
+        <option value="">선택하세요</option>
+        <option>동의</option>
+        <option>미동의</option>
+      </select>
+
       <label>9) 결제 및 환불 안내 확인</label>
-      <select required><option>수업 결제 및 환불 정책에 동의합니다.</option></select>
-      <br><br>
+      <select required>
+        <option value="">선택하세요</option>
+        <option>수업 결제 및 환불 정책에 동의합니다.</option>
+      </select>
+
       <button type="submit">제출</button>
     </form>
   </div>
